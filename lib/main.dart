@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 // Constante de la API
 const String kApiUrl = 'http://85.239.235.193:5000/api/status';
 const String kInputApiUrl = 'http://85.239.235.193:5000/api/replicatorinput';
+const String kRestartApiUrl = 'http://85.239.235.193:5000/api/restart_service';
 
 // Definición de la estructura de datos
 class ProcessingData {
@@ -246,6 +247,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  // Función para reiniciar el servicio en la nube
+  Future<void> restartCloudService() async {
+    // Diálogo de confirmación para evitar clics accidentales
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reiniciar Servicio Cloud'),
+        content: const Text(
+            '¿Estás seguro? Esto ejecutará "killall petroboxreplicatornode" en el servidor.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Reiniciar',
+                  style: TextStyle(color: kErrorColor))),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final response = await http.post(Uri.parse(kRestartApiUrl));
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Comando enviado correctamente.'),
+            backgroundColor: kSuccessColor,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error del servidor: ${response.statusCode}'),
+            backgroundColor: kErrorColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error de conexión: $e'),
+            backgroundColor: kErrorColor,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,6 +313,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: kCardColor,
         elevation: 0,
         actions: [
+          // Botón para reiniciar servicio en la nube
+          IconButton(
+            icon: const Icon(Icons.cloud_off, color: kErrorColor),
+            onPressed: restartCloudService,
+            tooltip: 'Reiniciar servicio en la nube',
+          ),
           // Botón para refrescar manualmente
           IconButton(
             icon: const Icon(Icons.refresh, color: kAccentColor),
