@@ -1,0 +1,27 @@
+name: dashboard_app
+description: Un dashboard elegante y minimalista para visualización de datos.
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  # Se recomienda un SDK >= 3.0.0
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # CRÍTICO: Necesario para DateFormat y NumberFormat
+  intl: ^0.18.1
+  # CRÍTICO: Necesario para peticiones HTTP
+  http: ^1.1.0 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
